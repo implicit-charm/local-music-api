@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>音乐播放器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind 配置 -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#165DFF",
+              secondary: "#86909C",
+              dark: "#1D2129",
+              "dark-light": "#272E3B",
+              "dark-lighter": "#343D4D",
+            },
+            fontFamily: {
+              inter: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .content-auto {
+          content-visibility: auto;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .text-shadow {
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .hover-scale {
+          transition: transform 0.2s ease;
+        }
+        .hover-scale:hover {
+          transform: scale(1.05);
+        }
+        .music-visualizer span {
+          display: inline-block;
+          width: 3px;
+          height: 12px;
+          margin: 0 1px;
+          background-color: #165dff;
+          border-radius: 3px;
+          animation: equalize 1s infinite;
+        }
+        @keyframes equalize {
+          0%,
+          100% {
+            height: 6px;
+          }
+          50% {
+            height: 16px;
+          }
+        }
+        .music-visualizer span:nth-child(2) {
+          animation-delay: 0.1s;
+        }
+        .music-visualizer span:nth-child(3) {
+          animation-delay: 0.2s;
+        }
+        .music-visualizer span:nth-child(4) {
+          animation-delay: 0.3s;
+        }
+        .music-visualizer span:nth-child(5) {
+          animation-delay: 0.4s;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-dark text-white font-inter min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header
+      class="bg-dark-light/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-md"
+    >
+      <div
+        class="container mx-auto px-4 py-3 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-4">
+          <button class="text-secondary hover:text-white transition-colors">
+            <i class="fa fa-bars text-xl"></i>
+          </button>
+          <h1
+            class="text-xl font-bold bg-gradient-to-r from-primary to-blue-400 text-transparent bg-clip-text"
+          >
+            音乐播放器
+          </h1>
+        </div>
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="#" class="text-white hover:text-primary transition-colors"
+            >发现</a
+          >
+          <a
+            href="#"
+            class="text-secondary hover:text-primary transition-colors"
+            >我的音乐</a
+          >
+          <a
+            href="#"
+            class="text-secondary hover:text-primary transition-colors"
+            >朋友</a
+          >
+          <a
+            href="#"
+            class="text-secondary hover:text-primary transition-colors"
+            >广播</a
+          >
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative hidden md:block">
+            <input
+              type="text"
+              placeholder="搜索音乐、艺术家或专辑"
+              class="bg-dark-lighter rounded-full py-1.5 px-4 pl-10 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <i
+              class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary"
+            ></i>
+          </div>
+          <button
+            class="bg-primary/10 hover:bg-primary/20 text-primary rounded-full p-2 transition-colors"
+          >
+            <i class="fa fa-user"></i>
+          </button>
+          <button
+            class="md:hidden text-secondary hover:text-white transition-colors"
+          >
+            <i class="fa fa-search text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 pt-24 pb-24">
+      <!-- 增加顶部间距，避免被导航栏遮挡 -->
+      <div class="container mx-auto px-4 py-6">
+        <!-- 播放信息 -->
+        <div
+          class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10"
+        >
+          <div
+            class="relative w-full md:w-64 lg:w-80 aspect-square rounded-2xl overflow-hidden shadow-2xl hover-scale"
+          >
+            <!-- 使用更高的圆角值 -->
+            <img
+              src="https://picsum.photos/seed/music1/600/600"
+              alt="专辑封面"
+              class="w-full h-full object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end justify-center pb-4"
+            >
+              <button
+                class="w-12 h-12 bg-primary rounded-[50%] p-4 shadow-lg hover:bg-primary/90 transition-colors flex justify-center items-center"
+              >
+                <i class="fa fa-play text-white text-xl"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="text-center md:text-left w-full">
+            <h2 class="text-2xl md:text-3xl font-bold mb-2">星空下的钢琴曲</h2>
+            <p class="text-lg text-secondary mb-4">钢琴艺术家</p>
+
+            <div
+              class="flex flex-wrap justify-center md:justify-start gap-3 mb-6"
+            >
+              <button
+                class="bg-primary hover:bg-primary/90 text-white rounded-full py-2 px-6 flex items-center gap-2 transition-colors"
+              >
+                <i class="fa fa-play"></i> 播放
+              </button>
+              <button
+                class="bg-dark-lighter hover:bg-dark-lighter/80 text-white rounded-full py-2 px-6 flex items-center gap-2 transition-colors"
+              >
+                <i class="fa fa-heart-o"></i> 收藏
+              </button>
+              <button
+                class="bg-dark-lighter hover:bg-dark-lighter/80 text-white rounded-full py-2 px-6 flex items-center gap-2 transition-colors"
+              >
+                <i class="fa fa-download"></i> 下载
+              </button>
+            </div>
+
+            <div
+              class="flex flex-wrap justify-center md:justify-start gap-4 text-secondary"
+            >
+              <span class="flex items-center gap-1">
+                <i class="fa fa-headphones"></i> 123,456 次播放
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="fa fa-calendar"></i> 2023-05-15
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="fa fa-music"></i> 12 首歌曲
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 歌曲列表 -->
+        <div class="bg-dark-light rounded-xl p-4 md:p-6 shadow-lg">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">播放列表</h3>
+            <div class="flex items-center gap-4">
+              <button class="text-secondary hover:text-white transition-colors">
+                <i class="fa fa-random"></i>
+              </button>
+              <button class="text-secondary hover:text-white transition-colors">
+                <i class="fa fa-repeat"></i>
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="space-y-3 max-h-[400px] overflow-y-auto scrollbar-hide pr-2"
+          >
+            <!-- 当前播放歌曲 -->
+            <div
+              class="bg-primary/10 border-l-4 border-primary rounded-lg p-3 flex items-center gap-4"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music11/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">星空夜曲</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="music-visualizer hidden md:flex">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart"></i>
+                </button>
+                <span class="hidden md:inline-block">3:45</span>
+              </div>
+            </div>
+
+            <!-- 其他歌曲 -->
+            <div
+              class="hover:bg-dark-lighter/30 rounded-lg p-3 flex items-center gap-4 transition-colors"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music2/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">月光奏鸣曲</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart-o"></i>
+                </button>
+                <span class="hidden md:inline-block">4:12</span>
+              </div>
+            </div>
+
+            <div
+              class="hover:bg-dark-lighter/30 rounded-lg p-3 flex items-center gap-4 transition-colors"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music3/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">秋日私语</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart-o"></i>
+                </button>
+                <span class="hidden md:inline-block">5:03</span>
+              </div>
+            </div>
+
+            <div
+              class="hover:bg-dark-lighter/30 rounded-lg p-3 flex items-center gap-4 transition-colors"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music4/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">夜的钢琴曲五</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart-o"></i>
+                </button>
+                <span class="hidden md:inline-block">3:28</span>
+              </div>
+            </div>
+
+            <div
+              class="hover:bg-dark-lighter/30 rounded-lg p-3 flex items-center gap-4 transition-colors"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music5/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">水边的阿狄丽娜</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart-o"></i>
+                </button>
+                <span class="hidden md:inline-block">4:56</span>
+              </div>
+            </div>
+
+            <div
+              class="hover:bg-dark-lighter/30 rounded-lg p-3 flex items-center gap-4 transition-colors"
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden">
+                <!-- 使用full确保圆形 -->
+                <img
+                  src="https://picsum.photos/seed/music6/100/100"
+                  alt="歌曲封面"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium truncate">卡农变奏曲</h4>
+                <p class="text-sm text-secondary truncate">钢琴艺术家</p>
+              </div>
+              <div class="flex items-center gap-4 text-secondary">
+                <button class="hover:text-white transition-colors">
+                  <i class="fa fa-heart-o"></i>
+                </button>
+                <span class="hidden md:inline-block">6:21</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 底部播放控制栏 -->
+    <footer class="bg-dark-light fixed bottom-0 left-0 right-0 z-40">
+      <div class="container mx-auto px-4">
+        <div
+          class="flex flex-col md:flex-row items-center justify-between py-3"
+        >
+          <!-- 当前播放歌曲信息 -->
+          <div
+            class="hidden md:flex items-center gap-3 w-full md:w-auto mb-3 md:mb-0"
+          >
+            <div class="w-12 h-12 rounded-full overflow-hidden">
+              <!-- 使用full确保圆形 -->
+              <img
+                src="https://picsum.photos/seed/music11/100/100"
+                alt="当前播放歌曲封面"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="hidden md:block">
+              <h4 class="font-medium text-sm">星空夜曲</h4>
+              <p class="text-xs text-secondary">钢琴艺术家</p>
+            </div>
+            <button
+              class="text-secondary hover:text-white transition-colors md:hidden"
+            >
+              <i class="fa fa-heart-o"></i>
+            </button>
+          </div>
+
+          <!-- 播放控制 -->
+          <div class="flex-1 flex flex-col items-center max-w-md">
+            <div class="flex items-center gap-6 mb-2">
+              <button class="text-secondary hover:text-white transition-colors">
+                <i class="fa fa-step-backward"></i>
+              </button>
+              <button
+                class="text-secondary hover:text-white transition-colors text-lg"
+              >
+                <i class="fa fa-backward"></i>
+              </button>
+              <button
+                class="bg-primary hover:bg-primary/90 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+              >
+                <i class="fa fa-pause"></i>
+              </button>
+              <button
+                class="text-secondary hover:text-white transition-colors text-lg"
+              >
+                <i class="fa fa-forward"></i>
+              </button>
+              <button class="text-secondary hover:text-white transition-colors">
+                <i class="fa fa-step-forward"></i>
+              </button>
+            </div>
+
+            <div class="w-full flex items-center gap-2">
+              <span class="text-xs text-secondary current-time">0:00</span>
+              <!-- 添加current-time类 -->
+              <div
+                class="flex-1 h-1 bg-dark-lighter rounded-full overflow-hidden"
+              >
+                <div
+                  class="h-full bg-primary w-[35%] rounded-full progress-bar"
+                ></div>
+                <!-- 添加progress-bar类 -->
+              </div>
+              <span class="text-xs text-secondary total-time">3:45</span>
+              <!-- 添加total-time类 -->
+            </div>
+          </div>
+
+          <!-- 音量控制 -->
+          <div
+            class="hidden md:flex items-center gap-3 w-full md:w-auto justify-end mt-3 md:mt-0"
+          >
+            <button class="text-secondary hover:text-white transition-colors">
+              <i class="fa fa-volume-up"></i>
+            </button>
+            <div class="w-24 h-1 bg-dark-lighter rounded-full overflow-hidden">
+              <div class="h-full bg-secondary w-[70%] rounded-full"></div>
+            </div>
+            <button class="text-secondary hover:text-white transition-colors">
+              <i class="fa fa-list"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // 页面滚动时导航栏效果
+      window.addEventListener("scroll", function () {
+        const header = document.querySelector("header");
+        if (window.scrollY > 10) {
+          header.classList.add("py-2");
+          header.classList.remove("py-3");
+        } else {
+          header.classList.add("py-3");
+          header.classList.remove("py-2");
+        }
+      });
+      let localMusic = [];
+      async function getLocalMusic() {
+        try {
+          const res = await fetch("/api/musics");
+          const data = await res.json();
+          const { files } = data;
+          localMusic = files || [];
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      // 初始化音乐播放器时间显示
+      document.addEventListener("DOMContentLoaded", function () {
+        const progressBar = document.querySelector(".progress-bar");
+        const currentTimeElement = document.querySelector(".current-time");
+        const totalTimeElement = document.querySelector(".total-time");
+
+        // 数据请求
+        getLocalMusic();
+
+        // 设置固定的总时长，避免NaN
+        const totalSeconds = 3 * 60 + 45; // 3:45
+        updateTimeDisplay(0, totalSeconds);
+
+        // 模拟音乐播放进度更新
+        let currentSeconds = 0;
+        setInterval(() => {
+          if (currentSeconds < totalSeconds) {
+            currentSeconds += 1;
+            const percentage = (currentSeconds / totalSeconds) * 100;
+            progressBar.style.width = `${percentage}%`;
+            updateTimeDisplay(currentSeconds, totalSeconds);
+          } else {
+            // 重置播放进度
+            currentSeconds = 0;
+            progressBar.style.width = "0%";
+            updateTimeDisplay(0, totalSeconds);
+          }
+        }, 1000);
+
+        // 更新时间显示函数
+        function updateTimeDisplay(current, total) {
+          if (currentTimeElement && totalTimeElement) {
+            currentTimeElement.textContent = formatTime(current);
+            totalTimeElement.textContent = formatTime(total);
+          }
+        }
+
+        // 格式化时间函数
+        function formatTime(seconds) {
+          const minutes = Math.floor(seconds / 60);
+          const remainingSeconds = Math.floor(seconds % 60);
+          return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+        }
+      });
+    </script>
+  </body>
+</html>
