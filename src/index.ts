@@ -7,7 +7,7 @@ const app = new Hono();
 
 app.use("*", serveStatic({ root: "./public" }));
 
-app.get("/", (c) => c.redirect("/public/index.html"));
+// app.get("/", (c) => c.redirect("/public/index.html"));
 
 app.get("/api/musics", (c) => {
   try {
